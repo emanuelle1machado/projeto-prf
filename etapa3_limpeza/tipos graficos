@@ -1,0 +1,99 @@
+import pandas as pd
+import numpy as np #biblioteca para manipulação de dados numéricos
+from google.colab import drive, files
+import io
+import os
+pd.set_option('display.max_columns', 50)  #perrmite a visualização de 50 colunas no máximo
+pd.options.display.float_format = '{:.2f}'.format #para todos os numeros aparecerem com 2 casas decimais
+
+import matplotlib.pyplot as plt #graficos e visualizacao de dados
+import seaborn as sns #graficos estatisticos, faz parte do matplotlib
+
+print("Selecione o arquivo CSV:")
+uploaded = files.upload()
+nome_arquivo = list(uploaded.keys())[0]
+df = pd.read_csv(io.BytesIO(uploaded[nome_arquivo]))
+
+#padronização de texto:
+
+print(f"\nColunas disponiveis: {list(df.columns)}")
+
+coluna = "causa_acidente"
+
+print(f"\nAntes da padronizacao (coluna '{coluna}'):")
+print(df[coluna].unique())
+
+df[coluna] = df[coluna].str.strip()
+
+df[coluna] = df[coluna].str.title()
+
+print(f"\nDepois da padronizacao (coluna '{coluna}'):")
+print(df[coluna].unique())
+
+#padronização de data
+
+coluna_data = "data_inversa"
+print(f"\nAntes da conversao, o tipo da coluna '{coluna_data}' e:")
+print(df[coluna_data].dtype)
+print(df[coluna_data].head())
+
+df[coluna_data] = pd.to_datetime(df[coluna_data], errors='coerce', format='%Y-%m-%d')
+
+print(f"\nDepois da conversao, o tipo da coluna '{coluna_data}' e:")
+print(df[coluna_data].dtype)
+print(df[coluna_data].head())
+
+datas_invalidas = df[coluna_data].isna().sum()
+print(f"\n{datas_invalidas} valores nao puderam ser convertidos em data valida.")
+
+print("\nQuantidade de valores vazios por coluna:")
+print(df.isna().sum())
+
+df = df.dropna(subset=[coluna_data])
+print(f"\nLinhas removidas por falta de data valida. Linhas restantes: {len(df)}")
+
+df["data_inversa"] = df["data_inversa"].fillna("Nao informado")
+
+#variavel qualitativa
+#escolhi o grafico de barras porque acho que fica mais fácil de visualizar que o de pizza
+#para causa_acidente
+pd.DataFrame(df['causa_acidente'].value_counts()) #contagem de cada variável #pd.DataFrame melhora a visualização #permite ver as causas mais comuns de acidente
+ax = df["causa_acidente"].value_counts() \
+  .head(10) \
+  .plot(kind='bar', title='10 causas mais comuns de acidente', color='blue')
+ax.set_xlabel('Causa de acidente')
+ax.set_xlabel('Quantidade');
+
+#para tipo_acidente
+ax = df["tipo_acidente"].value_counts() \
+  .head(10) \
+  .plot(kind='bar', title='Tipos mais comuns de acidente', color='green')
+ax.set_xlabel('Acidente por tipo')
+ax.set_ylabel('Quantidade');
+
+#para classificacao_acidente achei que o gráfico de pizza fica fácil de visualizar pois tem menos variáveis
+plt.figure(figsize=(5,3))
+df['classificacao_acidente'].value_counts().plot(kind='pie', autopct= '%1.1f%%', legend = False)
+plt.title('')
+plt.show();
+
+
+#variavel quantitativa
+
+ #numero de ilesos - utilizou o histograma, também dá para usar para o número de feridos e de mortos
+plt.figure()
+ax = df['ilesos'].plot(
+    kind='hist',
+    bins=range(0, 50, 5),
+    color=sns.color_palette("dark")[0],
+    edgecolor='darkblue',
+    alpha=1
+    )
+ax.set_ylabel('Quantidade')
+ax.set_xlabel('Ilesos')
+ax.set_xlim(0, 50)  # limita o eixo X ate 50
+plt.title('Distribuicao de ilesos por acidente')
+plt.show()
+
+df.to_csv("coluna_padronizada.csv", index=False)
+print("\nArquivo salvo como 'coluna_padronizada.csv'")

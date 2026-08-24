@@ -1,0 +1,54 @@
+-- Consulta os 10 primeiros registros da tabela
+SELECT * -- SELECT seleciona as colunas que devem ser mostradas. com *  seleciona todas as colunas 
+FROM limpeza_prf lp 
+LIMIT 10; -- LIMIT limita a quantidade de linhas que devem aparecer
+
+-- Lista as UFs existentes na base
+SELECT DISTINCT uf -- DISTINCT remove as duplicatas
+FROM public.limpeza_prf lp  
+ORDER BY uf; -- ORDER BY ordena os dados. na coluna UF, ordena em ordem alfabética
+
+-- Filtra acidentes de uma UF específica
+SELECT *
+FROM public.limpeza_prf lp  -- FROM indica de qual tabela os dados vão ser retirados 
+WHERE uf = 'SP' -- WHERE indica a condição. Se a UF por SP, os dados podem aparecer
+LIMIT 50;
+
+-- Quais os tipos de acidente existentes?
+select distinct lp.tipo_acidente 
+from limpeza_prf lp 
+order by lp.tipo_acidente; -- Retorna quais são os tipos de acidente em ordem alfabética
+
+-- Quais os acidentes com ilesos?
+select *
+from limpeza_prf lp 
+where lp.ilesos > 0 
+
+-- Quais os acidentes que aconteceram mais recentemente?
+select *
+from limpeza_prf lp 
+order by data_inversa desc -- DESC é a função que indica decrescente 
+limit 10;
+
+-- Quais os acidentes mais antigos?
+select *
+from limpeza_prf lp 
+order by data_inversa asc -- asc é a função que indica ascendente
+limit 10;
+
+-- Quais acidentes aconteceram por ingestão de álcool?
+select * 
+from limpeza_prf lp 
+where lp.causa_acidente = 'ingestão de álcool'
+
+-- Quais os tipos de pista na base?
+select distinct lp.tipo_pista 
+from limpeza_prf lp 
+order by lp.tipo_pista -- existem 3 tipos: dupla, múltipla e simples
+
+-- Quais acidentes em MG tiveram mais mortos, ordenados do mais grave?
+select *
+from limpeza_prf lp 
+where uf = 'MG' and lp.mortos > 0
+order by lp.mortos desc
+limit 10;

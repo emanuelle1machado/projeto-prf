@@ -1,0 +1,58 @@
+from google.colab import files
+import pandas as pd
+import io
+
+print("Selecione o arquivo CSV:")
+uploaded = files.upload()
+nome_arquivo = list(uploaded.keys())[0]
+df = pd.read_csv(io.BytesIO(uploaded[nome_arquivo]), sep=';', encoding='latin1')
+
+#padronização de texto:
+
+print(f"\n[1/3] Colunas disponiveis: {list(df.columns)}")
+
+coluna = "causa_acidente"
+
+print(f"\nAntes da padronizacao (coluna '{coluna}'):")
+print(df[coluna].unique())
+
+df[coluna] = df[coluna].str.strip()
+
+df[coluna] = df[coluna].str.title()
+
+print(f"\nDepois da padronizacao (coluna '{coluna}'):")
+print(df[coluna].unique())
+
+#padronização de data
+
+coluna_data = "data_inversa"
+print(f"\n[2/3] Antes da conversao, o tipo da coluna '{coluna_data}' e:")
+print(df[coluna_data].dtype)
+print(df[coluna_data].head())
+
+df[coluna_data] = pd.to_datetime(df[coluna_data], errors='coerce', format='%Y-%m-%d')
+
+print(f"\nDepois da conversao, o tipo da coluna '{coluna_data}' e:")
+print(df[coluna_data].dtype)
+print(df[coluna_data].head())
+
+datas_invalidas = df[coluna_data].isna().sum()
+print(f"\n{datas_invalidas} valores nao puderam ser convertidos em data valida.")
+
+print("\nQuantidade de valores vazios por coluna:")
+print(df.isna().sum())
+
+print(f"-> Linhas com datas inválidas removidas. Linhas restantes: {len(df)}")
+
+df["data_inversa"] = df["data_inversa"].fillna("Nao informado")
+
+print("\n[3/3] Verificando registros duplicados...")
+duplicados = df.duplicated().sum()
+if duplicados > 0:
+    df = df.drop_duplicates()
+    print(f"-> {duplicados} linhas duplicadas foram removidas.")
+else:
+    print("-> Nenhuma linha duplicada encontrada.")
+
+df.to_csv("coluna_padronizada.csv", index=False)
+print("\nArquivo salvo como 'coluna_padronizada.csv'")

@@ -1,2 +1,2 @@
-Criando um conflito de branch na conflito-branch-a
 
+Criando um conflito de branch entre conflito-branch-a e conflito-branch-b
